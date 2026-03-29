@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolAppCoreMVC.Models;
+using Microsoft.Reporting.NETCore;
 
 namespace SchoolAppCoreMVC.Controllers
 {
@@ -151,6 +152,23 @@ namespace SchoolAppCoreMVC.Controllers
         private bool StudentExists(int id)
         {
             return _context.Students.Any(e => e.StudentID == id);
+        }
+
+        [HttpPost]
+        public IActionResult GenerateReport()
+        {
+            var students = _context.Students.ToList();
+
+            LocalReport report = new LocalReport();
+
+            var reportPath = Path.Combine(Directory.GetCurrentDirectory(), "Reports", "StudentReport.rdlc");
+            report.ReportPath = reportPath;
+
+            report.DataSources.Add(new ReportDataSource("StudentDataSet", students));
+
+            byte[] pdf = report.Render("PDF");
+
+            return File(pdf, "application/pdf", "School_Student_Report.pdf");
         }
     }
 }
